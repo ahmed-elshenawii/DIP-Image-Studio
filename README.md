@@ -1,4 +1,4 @@
-# 🔮 NEXUS Studio Pro
+# 🔮 DIP-Image_Studio
 
 ## Digital Image Processing Suite | استوديو معالجة الصور الرقمية
 
