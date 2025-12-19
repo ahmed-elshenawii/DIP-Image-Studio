@@ -1,7 +1,7 @@
 """
 🎨 DIP-IMAGE-STUDIO - Digital Image Processing Suite
 =====================================================
-Cloud-Optimized Version - Super Stable
+Cloud-Optimized Version - Production Ready
 """
 
 import streamlit as st
@@ -36,7 +36,7 @@ MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024
 SUPPORTED_FORMATS = ['png', 'jpg', 'jpeg', 'bmp', 'tiff', 'webp']
 
 # =============================================================================
-# CSS STYLES
+# CSS STYLES - DARK MODE PROFESSIONAL THEME
 # =============================================================================
 st.markdown("""
 <style>
@@ -91,6 +91,8 @@ st.markdown("""
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
     
     .header-subtitle {
@@ -107,6 +109,7 @@ st.markdown("""
         border-radius: var(--radius-lg);
         padding: 1rem;
         margin-bottom: 1rem;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     }
     
     .image-badge {
@@ -130,6 +133,12 @@ st.markdown("""
         font-weight: 600 !important;
         border-radius: var(--radius-md) !important;
         padding: 0.75rem 1.5rem !important;
+        transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+    }
+    
+    .stButton > button:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 20px rgba(0, 212, 255, 0.4) !important;
     }
     
     .stDownloadButton > button {
@@ -149,6 +158,7 @@ st.markdown("""
         text-align: center;
         max-width: 600px;
         margin: 2rem auto;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     }
     
     .welcome-title {
@@ -177,6 +187,12 @@ st.markdown("""
         background: var(--gradient-cyber);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
+    }
+    
+    /* Image styling with rounded corners */
+    [data-testid="stImage"] img {
+        border-radius: var(--radius-md);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     }
 </style>
 """, unsafe_allow_html=True)
@@ -394,109 +410,104 @@ def main():
             </div>
         </div>
         """, unsafe_allow_html=True)
-        return
-
-    # Process Image
-    try:
-        file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
-        original_image = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
-        
-        if original_image is None:
-            st.error("❌ Could not read the image. Please try a different file.")
-            return
-        
-        processed_image = original_image.copy()
-        
-        # Apply selected filter
-        if filter_category != "None" and selected_filter != "None":
-            if selected_filter == "Grayscale":
-                processed_image = convert_to_grayscale(processed_image)
-            elif selected_filter == "Gaussian Blur":
-                processed_image = apply_gaussian_blur(processed_image, filter_params['kernel_size'], filter_params['sigma'])
-            elif selected_filter == "Box Blur":
-                processed_image = apply_box_blur(processed_image, filter_params['kernel_size'])
-            elif selected_filter == "Median Filter":
-                processed_image = apply_median_filter(processed_image, filter_params['kernel_size'])
-            elif selected_filter == "Brightness & Contrast":
-                processed_image = adjust_brightness_contrast(processed_image, filter_params['brightness'], filter_params['contrast'])
-            elif selected_filter == "Invert Colors":
-                processed_image = apply_inversion(processed_image)
-            elif selected_filter == "Canny Edge":
-                processed_image = apply_canny_edge(processed_image, filter_params['low'], filter_params['high'])
-            elif selected_filter == "Sobel Edge":
-                processed_image = apply_sobel_edge(processed_image, filter_params['ksize'])
-            elif selected_filter == "Laplacian Edge":
-                processed_image = apply_laplacian(processed_image)
-            elif selected_filter == "Sharpening":
-                processed_image = apply_sharpening(processed_image, filter_params['strength'])
-            elif selected_filter == "Global Threshold":
-                processed_image = apply_threshold(processed_image, filter_params['threshold'])
-            elif selected_filter == "Adaptive Threshold":
-                processed_image = apply_adaptive_threshold(processed_image, filter_params['block'], filter_params['c'])
-            elif selected_filter == "Histogram Equalization":
-                processed_image = apply_histogram_equalization(processed_image)
-            elif selected_filter == "Morphological Ops":
-                processed_image = apply_morphological(processed_image, filter_params['op'], filter_params['ksize'])
-        
-        # Convert for display
-        original_rgb = cv2.cvtColor(original_image, cv2.COLOR_BGR2RGB)
-        if len(processed_image.shape) == 2:
-            display_processed = processed_image
-        else:
-            display_processed = cv2.cvtColor(processed_image, cv2.COLOR_BGR2RGB)
-        
-        # Display Images
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.markdown('<div class="image-card"><div class="image-badge badge-before">📷 BEFORE</div>', unsafe_allow_html=True)
-            st.image(original_rgb, use_container_width=True)
-            st.markdown('</div>', unsafe_allow_html=True)
-        
-        with col2:
-            label = f"🎨 AFTER • {selected_filter}" if selected_filter != "None" else "🎨 AFTER"
-            st.markdown(f'<div class="image-card"><div class="image-badge badge-after">{label}</div>', unsafe_allow_html=True)
-            st.image(display_processed, use_container_width=True)
-            st.markdown('</div>', unsafe_allow_html=True)
-        
-        # Download Section
-        if filter_category != "None" and selected_filter != "None":
-            st.markdown("### 💾 Download")
+    else:
+        # Process Image with try-except for stability
+        try:
+            file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
+            original_image = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
             
-            if len(processed_image.shape) == 2:
-                pil_image = Image.fromarray(processed_image)
+            if original_image is None:
+                st.error("❌ Could not read the image. Please try a different file.")
             else:
-                pil_image = Image.fromarray(cv2.cvtColor(processed_image, cv2.COLOR_BGR2RGB))
-            
-            col_d1, col_d2, col_d3 = st.columns(3)
-            
-            with col_d1:
-                buf = io.BytesIO()
-                pil_image.save(buf, format='PNG')
-                st.download_button("⬇️ PNG", buf.getvalue(), "processed.png", "image/png", use_container_width=True)
-            
-            with col_d2:
-                buf = io.BytesIO()
-                img_rgb = pil_image.convert('RGB') if pil_image.mode != 'RGB' else pil_image
-                img_rgb.save(buf, format='JPEG', quality=95)
-                st.download_button("⬇️ JPEG", buf.getvalue(), "processed.jpg", "image/jpeg", use_container_width=True)
-            
-            with col_d3:
-                buf = io.BytesIO()
-                pil_image.save(buf, format='WebP', quality=95)
-                st.download_button("⬇️ WebP", buf.getvalue(), "processed.webp", "image/webp", use_container_width=True)
-    
-    except Exception as e:
-        st.error(f"❌ Error processing image: {str(e)}")
-        import traceback
-        st.code(traceback.format_exc())
-        return
+                processed_image = original_image.copy()
+                
+                # Apply selected filter
+                if filter_category != "None" and selected_filter != "None":
+                    if selected_filter == "Grayscale":
+                        processed_image = convert_to_grayscale(processed_image)
+                    elif selected_filter == "Gaussian Blur":
+                        processed_image = apply_gaussian_blur(processed_image, filter_params['kernel_size'], filter_params['sigma'])
+                    elif selected_filter == "Box Blur":
+                        processed_image = apply_box_blur(processed_image, filter_params['kernel_size'])
+                    elif selected_filter == "Median Filter":
+                        processed_image = apply_median_filter(processed_image, filter_params['kernel_size'])
+                    elif selected_filter == "Brightness & Contrast":
+                        processed_image = adjust_brightness_contrast(processed_image, filter_params['brightness'], filter_params['contrast'])
+                    elif selected_filter == "Invert Colors":
+                        processed_image = apply_inversion(processed_image)
+                    elif selected_filter == "Canny Edge":
+                        processed_image = apply_canny_edge(processed_image, filter_params['low'], filter_params['high'])
+                    elif selected_filter == "Sobel Edge":
+                        processed_image = apply_sobel_edge(processed_image, filter_params['ksize'])
+                    elif selected_filter == "Laplacian Edge":
+                        processed_image = apply_laplacian(processed_image)
+                    elif selected_filter == "Sharpening":
+                        processed_image = apply_sharpening(processed_image, filter_params['strength'])
+                    elif selected_filter == "Global Threshold":
+                        processed_image = apply_threshold(processed_image, filter_params['threshold'])
+                    elif selected_filter == "Adaptive Threshold":
+                        processed_image = apply_adaptive_threshold(processed_image, filter_params['block'], filter_params['c'])
+                    elif selected_filter == "Histogram Equalization":
+                        processed_image = apply_histogram_equalization(processed_image)
+                    elif selected_filter == "Morphological Ops":
+                        processed_image = apply_morphological(processed_image, filter_params['op'], filter_params['ksize'])
+                
+                # Convert for display
+                original_rgb = cv2.cvtColor(original_image, cv2.COLOR_BGR2RGB)
+                if len(processed_image.shape) == 2:
+                    display_processed = processed_image
+                else:
+                    display_processed = cv2.cvtColor(processed_image, cv2.COLOR_BGR2RGB)
+                
+                # Display Images in Two Columns
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    st.markdown('<div class="image-card"><div class="image-badge badge-before">📷 Original Image</div>', unsafe_allow_html=True)
+                    st.image(original_rgb, use_container_width=True)
+                    st.markdown('</div>', unsafe_allow_html=True)
+                
+                with col2:
+                    label = f"🎨 Processed • {selected_filter}" if selected_filter != "None" else "🎨 Processed Image"
+                    st.markdown(f'<div class="image-card"><div class="image-badge badge-after">{label}</div>', unsafe_allow_html=True)
+                    st.image(display_processed, use_container_width=True)
+                    st.markdown('</div>', unsafe_allow_html=True)
+                
+                # Download Section
+                if filter_category != "None" and selected_filter != "None":
+                    st.markdown("### 💾 Download Processed Image")
+                    
+                    if len(processed_image.shape) == 2:
+                        pil_image = Image.fromarray(processed_image)
+                    else:
+                        pil_image = Image.fromarray(cv2.cvtColor(processed_image, cv2.COLOR_BGR2RGB))
+                    
+                    col_d1, col_d2, col_d3 = st.columns(3)
+                    
+                    with col_d1:
+                        buf = io.BytesIO()
+                        pil_image.save(buf, format='PNG')
+                        st.download_button("⬇️ PNG", buf.getvalue(), "processed.png", "image/png", use_container_width=True)
+                    
+                    with col_d2:
+                        buf = io.BytesIO()
+                        img_rgb = pil_image.convert('RGB') if pil_image.mode != 'RGB' else pil_image
+                        img_rgb.save(buf, format='JPEG', quality=95)
+                        st.download_button("⬇️ JPEG", buf.getvalue(), "processed.jpg", "image/jpeg", use_container_width=True)
+                    
+                    with col_d3:
+                        buf = io.BytesIO()
+                        pil_image.save(buf, format='WebP', quality=95)
+                        st.download_button("⬇️ WebP", buf.getvalue(), "processed.webp", "image/webp", use_container_width=True)
+        
+        except Exception as e:
+            st.error(f"❌ Error processing image: {str(e)}")
 
     # Footer
     st.markdown("""
     <div class="cyber-footer">
-        <div class="footer-brand">🎨 DIP-IMAGE-STUDIO | Developed by Ahmed Elshenawii</div>
-        <div style="margin-top: 1rem;">
+        <div class="footer-brand">Developed by Ahmed Elshenawii | DIP-IMAGE-STUDIO © 2024</div>
+        <div style="margin-top: 0.5rem;">
             <a href="https://github.com/ahmed-elshenawii" target="_blank" style="color: #ff007f; text-decoration: none;">
                 GitHub Profile
             </a>
@@ -509,10 +520,4 @@ def main():
 # RUN APP
 # =============================================================================
 if __name__ == "__main__":
-    try:
-        main()
-    except Exception as e:
-        st.error("🚨 **Critical Error**")
-        st.error(f"{type(e).__name__}: {str(e)}")
-        import traceback
-        st.code(traceback.format_exc())
+    main()
