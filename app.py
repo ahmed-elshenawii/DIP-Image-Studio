@@ -2,7 +2,13 @@
 🎨 DIP-IMAGE-STUDIO - Digital Image Processing Suite
 =====================================================
 Production-Ready | Cloud-Optimized | Premium Edition
-Developed by Ahmed Elshenawii
+
+Contributors:
+    - Ahmed Elshenawy
+    - Ahmed Osama
+    - Ahmed Seliem
+    - Abdullrahman Elshhawy
+    - Abdullrahman Shaheen
 
 Final Polish Version with:
 - Ultra-clean standalone look
@@ -46,7 +52,7 @@ SUPPORTED_FORMATS = ['jpg', 'png', 'jpeg']
 
 # =============================================================================
 # ZERO-UI FOOTPRINT CSS - 100% INDEPENDENT WEB APP LOOK
-# Hides: Manage App button, GitHub/Share icons, Header, Footer
+# Hides: Manage App button, GitHub/Share icons, Header, Footer, Sidebar Nav
 # =============================================================================
 st.markdown("""
 <style>
@@ -508,37 +514,64 @@ st.markdown("""
         font-weight: 500;
     }
     
-    /* ===== PROFESSIONAL FOOTER ===== */
+    /* ===== PROFESSIONAL CONTRIBUTORS FOOTER ===== */
     .pro-footer {
         text-align: center;
-        padding: 2.5rem 1rem;
+        padding: 3rem 1rem 2.5rem;
         margin-top: 4rem;
         border-top: 1px solid var(--glass-border);
-        background: linear-gradient(180deg, transparent 0%, rgba(0, 212, 255, 0.02) 100%);
+        background: linear-gradient(180deg, transparent 0%, rgba(0, 212, 255, 0.03) 100%);
     }
     
-    .footer-brand {
+    .footer-title {
         font-family: 'Orbitron', sans-serif;
-        font-size: 0.9rem;
-        font-weight: 500;
-        margin-bottom: 0.75rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--neon-cyan);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-bottom: 1.5rem;
     }
     
-    .footer-brand a {
+    .contributors-list {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem 2rem;
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    
+    .contributor-name {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+        padding: 0.5rem 1.25rem;
+        background: rgba(0, 212, 255, 0.08);
+        border: 1px solid rgba(0, 212, 255, 0.2);
+        border-radius: 25px;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+    
+    .contributor-name:hover {
+        background: rgba(0, 212, 255, 0.15);
+        border-color: var(--neon-cyan);
+        color: var(--text-primary);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 212, 255, 0.2);
+    }
+    
+    .footer-app-name {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 0.85rem;
+        font-weight: 500;
         background: var(--gradient-cyber);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        text-decoration: none;
-        transition: all 0.3s ease;
-    }
-    
-    .footer-brand a:hover {
-        filter: brightness(1.2);
-    }
-    
-    .footer-copyright {
-        color: var(--text-muted);
-        font-size: 0.8rem;
+        margin-top: 2rem;
         letter-spacing: 0.05em;
     }
     
@@ -1131,14 +1164,19 @@ def main():
             st.error(f"❌ Error processing image: {str(e)}")
 
     # =========================================================================
-    # PROFESSIONAL FOOTER
+    # PROFESSIONAL CONTRIBUTORS FOOTER
     # =========================================================================
     st.markdown("""
     <div class="pro-footer">
-        <div class="footer-brand">
-            Developed by <a href="https://github.com/AhmedElshenawii" target="_blank">Ahmed Elshenawii</a>
+        <div class="footer-title">✨ Contributors</div>
+        <div class="contributors-list">
+            <span class="contributor-name">Ahmed Elshenawy</span>
+            <span class="contributor-name">Ahmed Osama</span>
+            <span class="contributor-name">Ahmed Seliem</span>
+            <span class="contributor-name">Abdullrahman Elshhawy</span>
+            <span class="contributor-name">Abdullrahman Shaheen</span>
         </div>
-        <div class="footer-copyright">DIP-IMAGE-STUDIO © 2024 • All Rights Reserved</div>
+        <div class="footer-app-name">DIP-IMAGE-STUDIO © 2024</div>
     </div>
     """, unsafe_allow_html=True)
 
