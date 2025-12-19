@@ -2,6 +2,7 @@
 🎨 DIP-IMAGE-STUDIO - Digital Image Processing Suite
 =====================================================
 Cloud-Optimized Version - Production Ready
+Premium Professional Edition
 """
 
 import streamlit as st
@@ -36,12 +37,18 @@ MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024
 SUPPORTED_FORMATS = ['png', 'jpg', 'jpeg', 'bmp', 'tiff', 'webp']
 
 # =============================================================================
-# CSS STYLES - DARK MODE PROFESSIONAL THEME
+# CSS STYLES - DARK MODE WITH GLASSMORPHISM & PREMIUM ANIMATIONS
 # =============================================================================
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;800&display=swap');
     @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap');
+    
+    /* ===== HIDE STREAMLIT BRANDING FOR STANDALONE LOOK ===== */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    .stDeployButton {display:none;}
     
     :root {
         --bg-void: #0E1117;
@@ -66,10 +73,17 @@ st.markdown("""
             radial-gradient(ellipse at bottom right, rgba(255, 0, 127, 0.08) 0%, transparent 50%);
     }
     
+    /* ===== GLASSMORPHISM SIDEBAR ===== */
     [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, rgba(14, 17, 23, 0.9) 0%, rgba(22, 27, 34, 0.95) 100%) !important;
-        backdrop-filter: blur(20px);
-        border-right: 1px solid var(--glass-border);
+        background: linear-gradient(180deg, rgba(14, 17, 23, 0.85) 0%, rgba(22, 27, 34, 0.9) 100%) !important;
+        backdrop-filter: blur(25px) saturate(180%);
+        -webkit-backdrop-filter: blur(25px) saturate(180%);
+        border-right: 1px solid rgba(0, 212, 255, 0.2);
+        box-shadow: 4px 0 30px rgba(0, 0, 0, 0.5);
+    }
+    
+    [data-testid="stSidebar"] [data-testid="stMarkdown"] {
+        color: var(--text-primary);
     }
     
     .cyber-header {
@@ -102,14 +116,25 @@ st.markdown("""
         text-transform: uppercase;
     }
     
+    /* ===== PREMIUM IMAGE CARDS WITH 20PX ROUNDED BORDERS ===== */
     .image-card {
         background: var(--bg-card);
         backdrop-filter: blur(15px);
         border: 1px solid var(--glass-border);
-        border-radius: var(--radius-lg);
-        padding: 1rem;
+        border-radius: 20px;
+        padding: 1.25rem;
         margin-bottom: 1rem;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        box-shadow: 
+            0 8px 32px rgba(0, 0, 0, 0.4),
+            0 0 20px rgba(0, 212, 255, 0.05);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .image-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 
+            0 12px 40px rgba(0, 0, 0, 0.5),
+            0 0 30px rgba(0, 212, 255, 0.1);
     }
     
     .image-badge {
@@ -117,7 +142,7 @@ st.markdown("""
         padding: 0.5rem;
         margin-bottom: 0.5rem;
         font-family: 'Orbitron', sans-serif;
-        font-size: 0.8rem;
+        font-size: 0.9rem;
         font-weight: 600;
         letter-spacing: 0.1em;
         text-transform: uppercase;
@@ -125,6 +150,22 @@ st.markdown("""
     
     .badge-before { color: var(--neon-cyan); }
     .badge-after { color: var(--neon-pink); }
+    
+    /* ===== FADE-IN ANIMATION FOR PROCESSED IMAGE ===== */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .processed-image-container {
+        animation: fadeInUp 0.6s ease-out forwards;
+    }
     
     .stButton > button {
         background: var(--gradient-cyber) !important;
@@ -189,10 +230,22 @@ st.markdown("""
         -webkit-text-fill-color: transparent;
     }
     
-    /* Image styling with rounded corners */
+    /* ===== IMAGE STYLING WITH 20PX ROUNDED CORNERS & SHADOWS ===== */
     [data-testid="stImage"] img {
-        border-radius: var(--radius-md);
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        border-radius: 20px !important;
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
+    }
+    
+    /* ===== SIDEBAR SECTION HEADERS ===== */
+    .sidebar-section {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--neon-cyan);
+        margin-top: 1rem;
+        margin-bottom: 0.5rem;
+        padding-bottom: 0.3rem;
+        border-bottom: 1px solid rgba(0, 212, 255, 0.2);
     }
 </style>
 """, unsafe_allow_html=True)
@@ -317,17 +370,18 @@ def main():
     </div>
     """, unsafe_allow_html=True)
 
-    # Sidebar
+    # Sidebar with Icons
     with st.sidebar:
         st.markdown("## 🎨 DIP-IMAGE-STUDIO")
         st.markdown("---")
         
-        # File Upload
-        st.markdown("### 📸 Upload Image")
+        # File Upload Section with Icon
+        st.markdown('<div class="sidebar-section">📸 Upload Image</div>', unsafe_allow_html=True)
         uploaded_file = st.file_uploader(
             "Choose an image",
             type=SUPPORTED_FORMATS,
-            help=f"Max size: {MAX_FILE_SIZE_MB}MB"
+            help=f"Max size: {MAX_FILE_SIZE_MB}MB",
+            label_visibility="collapsed"
         )
         
         # Validate file size
@@ -339,21 +393,24 @@ def main():
         
         st.markdown("---")
         
-        # Filter Selection
-        st.markdown("### ✨ Filters")
+        # Filter Selection with Icons
+        st.markdown('<div class="sidebar-section">✨ Filter Category</div>', unsafe_allow_html=True)
         filter_category = st.selectbox(
             "Category",
-            ["None", "Basic", "Edge Detection", "Advanced"]
+            ["None", "✨ Basic", "🛠️ Edge Detection", "⚡ Advanced"],
+            label_visibility="collapsed"
         )
         
         selected_filter = "None"
         filter_params = {}
         
-        if filter_category == "Basic":
+        if filter_category == "✨ Basic":
+            st.markdown('<div class="sidebar-section">🎚️ Basic Filters</div>', unsafe_allow_html=True)
             selected_filter = st.selectbox(
                 "Filter",
                 ["Grayscale", "Gaussian Blur", "Box Blur", "Median Filter", 
-                 "Brightness & Contrast", "Invert Colors"]
+                 "Brightness & Contrast", "Invert Colors"],
+                label_visibility="collapsed"
             )
             if selected_filter == "Gaussian Blur":
                 filter_params['kernel_size'] = st.slider("Intensity", 3, 31, 5, step=2)
@@ -366,10 +423,12 @@ def main():
                 filter_params['brightness'] = st.slider("Brightness", -100, 100, 0)
                 filter_params['contrast'] = st.slider("Contrast", 0.5, 3.0, 1.0)
                 
-        elif filter_category == "Edge Detection":
+        elif filter_category == "🛠️ Edge Detection":
+            st.markdown('<div class="sidebar-section">🔍 Edge Filters</div>', unsafe_allow_html=True)
             selected_filter = st.selectbox(
                 "Filter",
-                ["Canny Edge", "Sobel Edge", "Laplacian Edge"]
+                ["Canny Edge", "Sobel Edge", "Laplacian Edge"],
+                label_visibility="collapsed"
             )
             if selected_filter == "Canny Edge":
                 filter_params['low'] = st.slider("Low Threshold", 0, 200, 50)
@@ -377,11 +436,13 @@ def main():
             elif selected_filter == "Sobel Edge":
                 filter_params['ksize'] = st.slider("Kernel Size", 1, 7, 3, step=2)
                 
-        elif filter_category == "Advanced":
+        elif filter_category == "⚡ Advanced":
+            st.markdown('<div class="sidebar-section">🔧 Advanced Filters</div>', unsafe_allow_html=True)
             selected_filter = st.selectbox(
                 "Filter",
                 ["Sharpening", "Global Threshold", "Adaptive Threshold",
-                 "Histogram Equalization", "Morphological Ops"]
+                 "Histogram Equalization", "Morphological Ops"],
+                label_visibility="collapsed"
             )
             if selected_filter == "Sharpening":
                 filter_params['strength'] = st.slider("Strength", 0.5, 5.0, 1.0)
@@ -395,7 +456,7 @@ def main():
                 filter_params['ksize'] = st.slider("Kernel Size", 3, 21, 5, step=2)
         
         st.markdown("---")
-        if st.button("🔄 Reset", use_container_width=True):
+        if st.button("🔄 Reset All", use_container_width=True):
             st.rerun()
 
     # Main Content
@@ -459,7 +520,7 @@ def main():
                 else:
                     display_processed = cv2.cvtColor(processed_image, cv2.COLOR_BGR2RGB)
                 
-                # Display Images in Two Columns
+                # Display Images Side-by-Side
                 col1, col2 = st.columns(2)
                 
                 with col1:
@@ -469,7 +530,7 @@ def main():
                 
                 with col2:
                     label = f"🎨 Processed • {selected_filter}" if selected_filter != "None" else "🎨 Processed Image"
-                    st.markdown(f'<div class="image-card"><div class="image-badge badge-after">{label}</div>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="image-card processed-image-container"><div class="image-badge badge-after">{label}</div>', unsafe_allow_html=True)
                     st.image(display_processed, use_container_width=True)
                     st.markdown('</div>', unsafe_allow_html=True)
                 
@@ -507,11 +568,6 @@ def main():
     st.markdown("""
     <div class="cyber-footer">
         <div class="footer-brand">Developed by Ahmed Elshenawii | DIP-IMAGE-STUDIO © 2024</div>
-        <div style="margin-top: 0.5rem;">
-            <a href="https://github.com/ahmed-elshenawii" target="_blank" style="color: #ff007f; text-decoration: none;">
-                GitHub Profile
-            </a>
-        </div>
     </div>
     """, unsafe_allow_html=True)
 
