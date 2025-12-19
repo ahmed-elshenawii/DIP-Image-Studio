@@ -51,21 +51,75 @@ MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024
 SUPPORTED_FORMATS = ['jpg', 'png', 'jpeg']
 
 # =============================================================================
-# ZERO-UI FOOTPRINT CSS - 100% INDEPENDENT WEB APP LOOK
-# Hides: Manage App button, GitHub/Share icons, Header, Footer, Sidebar Nav
+# REFINED STEALTH CSS - Independent Web App Look with Visible Sidebar Toggle
+# Hides: GitHub/Share icons, Meatball menu, Manage App button
+# Keeps: Sidebar toggle arrow (styled with brand colors)
 # =============================================================================
 st.markdown("""
 <style>
-    /* ===== ZERO-UI FOOTPRINT: HIDE ALL STREAMLIT DEFAULT ELEMENTS ===== */
+    /* ===== REFINED STEALTH MODE: HIDE SPECIFIC STREAMLIT ELEMENTS ===== */
+    /* Hide the main menu (three dots / meatball menu) */
     #MainMenu {visibility: hidden;}
+    
+    /* Hide the default Streamlit footer */
     footer {visibility: hidden;}
-    header {visibility: hidden;}
-    .stDeployButton {display:none;}
+    
+    /* Hide the Deploy button */
+    .stDeployButton {display: none !important;}
+    
+    /* Hide the GitHub icon / fork button */
+    [data-testid="stToolbar"] > div:first-child {display: none !important;}
+    
+    /* Hide action buttons in the toolbar (Share, Star, etc.) */
+    .stActionButton {display: none !important;}
+    
+    /* Hide sidebar navigation (for multi-page apps) */
     [data-testid="stSidebarNav"] {display: none;}
     
-    /* Hide the toolbar/action buttons at top */
-    [data-testid="stToolbar"] {display: none !important;}
-    .stActionButton {display: none !important;}
+    /* Hide "Manage app" button at bottom-right */
+    .stStatusWidget, [data-testid="manage-app-button"] {display: none !important;}
+    .viewerBadge_container__r5tak, .viewerBadge_link__qRIco {display: none !important;}
+    
+    /* ===== SIDEBAR TOGGLE ARROW - ALWAYS VISIBLE & BRANDED ===== */
+    /* Make the sidebar collapse button (chevron) always visible */
+    [data-testid="stSidebarCollapsedControl"],
+    [data-testid="collapsedControl"] {
+        display: flex !important;
+        visibility: visible !important;
+    }
+    
+    /* Style the sidebar toggle button with brand neon colors */
+    [data-testid="stSidebarCollapsedControl"] button,
+    [data-testid="collapsedControl"] button,
+    button[kind="header"] {
+        background: rgba(0, 212, 255, 0.15) !important;
+        border: 1px solid rgba(0, 212, 255, 0.4) !important;
+        border-radius: 8px !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    /* Hover effect for sidebar toggle */
+    [data-testid="stSidebarCollapsedControl"] button:hover,
+    [data-testid="collapsedControl"] button:hover,
+    button[kind="header"]:hover {
+        background: rgba(0, 212, 255, 0.25) !important;
+        border-color: rgba(0, 212, 255, 0.7) !important;
+        box-shadow: 0 0 15px rgba(0, 212, 255, 0.4) !important;
+    }
+    
+    /* Style the chevron arrow icon itself */
+    [data-testid="stSidebarCollapsedControl"] svg,
+    [data-testid="collapsedControl"] svg,
+    button[kind="header"] svg {
+        color: #00d4ff !important;
+        stroke: #00d4ff !important;
+        filter: drop-shadow(0 0 3px rgba(0, 212, 255, 0.5));
+    }
+    
+    /* Ensure header is transparent but toggle remains clickable */
+    header[data-testid="stHeader"] {
+        background: transparent !important;
+    }
     
     /* ===== IMPORT PREMIUM FONTS ===== */
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap');
