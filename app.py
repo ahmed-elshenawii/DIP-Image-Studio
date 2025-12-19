@@ -3,6 +3,13 @@
 =====================================================
 Production-Ready | Cloud-Optimized | Premium Edition
 Developed by Ahmed Elshenawii
+
+Final Polish Version with:
+- Ultra-clean standalone look
+- Gradient border frames on images
+- Spinner + Toast notifications
+- Step-by-step sidebar guide
+- High-resolution downloads
 """
 
 import streamlit as st
@@ -25,6 +32,7 @@ try:
     import numpy as np
     from PIL import Image
     import io
+    import time
 except ImportError as e:
     st.error(f"❌ Failed to import required module: {e}")
     st.stop()
@@ -37,8 +45,8 @@ MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024
 SUPPORTED_FORMATS = ['jpg', 'png', 'jpeg']
 
 # =============================================================================
-# ZERO-UI FOOTPRINT CSS - Hide all Streamlit default elements
-# Premium Dark Mode with Glassmorphism & Neon Glow Effects
+# ZERO-UI FOOTPRINT CSS - 100% INDEPENDENT WEB APP LOOK
+# Hides: Manage App button, GitHub/Share icons, Header, Footer
 # =============================================================================
 st.markdown("""
 <style>
@@ -48,6 +56,10 @@ st.markdown("""
     header {visibility: hidden;}
     .stDeployButton {display:none;}
     [data-testid="stSidebarNav"] {display: none;}
+    
+    /* Hide the toolbar/action buttons at top */
+    [data-testid="stToolbar"] {display: none !important;}
+    .stActionButton {display: none !important;}
     
     /* ===== IMPORT PREMIUM FONTS ===== */
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap');
@@ -133,9 +145,10 @@ st.markdown("""
         left: 50%;
         transform: translateX(-50%);
         width: 60%;
-        height: 1px;
+        height: 2px;
         background: var(--gradient-aurora);
         filter: blur(1px);
+        box-shadow: 0 0 20px rgba(0, 212, 255, 0.8);
     }
     
     .header-icon {
@@ -182,12 +195,12 @@ st.markdown("""
         margin-top: 0.5rem;
     }
     
-    /* ===== PREMIUM IMAGE CARDS ===== */
+    /* ===== PREMIUM IMAGE CARDS WITH GRADIENT BORDER ===== */
     .image-card {
+        position: relative;
         background: var(--bg-card);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
-        border: 1px solid var(--glass-border);
         border-radius: 20px;
         padding: 1.5rem;
         margin-bottom: 1.5rem;
@@ -198,13 +211,36 @@ st.markdown("""
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
+    /* Gradient Border Effect */
+    .image-card::before {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background: var(--gradient-aurora);
+        border-radius: 22px;
+        z-index: -1;
+        opacity: 0.6;
+        transition: opacity 0.3s ease;
+    }
+    
+    .image-card:hover::before {
+        opacity: 1;
+    }
+    
     .image-card:hover {
         transform: translateY(-6px);
-        border-color: var(--glass-border-hover);
         box-shadow: 
             0 16px 48px rgba(0, 0, 0, 0.5),
-            0 0 40px rgba(0, 212, 255, 0.1),
+            0 0 40px rgba(0, 212, 255, 0.15),
             inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+    
+    /* Processed image specific gradient (pink dominant) */
+    .image-card-processed::before {
+        background: linear-gradient(135deg, #ff007f 0%, #a855f7 50%, #00d4ff 100%);
     }
     
     .image-badge {
@@ -222,13 +258,13 @@ st.markdown("""
     .badge-original {
         color: var(--neon-cyan);
         background: rgba(0, 212, 255, 0.1);
-        border: 1px solid rgba(0, 212, 255, 0.2);
+        border: 1px solid rgba(0, 212, 255, 0.3);
     }
     
     .badge-processed {
         color: var(--neon-pink);
         background: rgba(255, 0, 127, 0.1);
-        border: 1px solid rgba(255, 0, 127, 0.2);
+        border: 1px solid rgba(255, 0, 127, 0.3);
     }
     
     /* ===== FADE-IN ANIMATION FOR PROCESSED IMAGE ===== */
@@ -247,7 +283,21 @@ st.markdown("""
         animation: fadeInUp 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
     }
     
-    /* ===== IMAGE STYLING ===== */
+    /* ===== IMAGE STYLING WITH GRADIENT FRAME ===== */
+    .image-frame {
+        position: relative;
+        padding: 3px;
+        background: var(--gradient-aurora);
+        border-radius: 18px;
+        box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+    }
+    
+    .image-frame img {
+        border-radius: 15px !important;
+        display: block;
+        width: 100%;
+    }
+    
     [data-testid="stImage"] img {
         border-radius: 16px !important;
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
@@ -263,7 +313,7 @@ st.markdown("""
         text-align: center;
         padding: 1.5rem 1rem;
         border-bottom: 1px solid var(--glass-border);
-        margin-bottom: 1.5rem;
+        margin-bottom: 1rem;
     }
     
     .sidebar-brand-icon {
@@ -279,6 +329,52 @@ st.markdown("""
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         letter-spacing: 0.05em;
+    }
+    
+    /* Step Guide Styling */
+    .step-guide {
+        padding: 0.75rem 1rem;
+        margin: 0.5rem 0;
+        background: rgba(0, 212, 255, 0.05);
+        border-left: 3px solid var(--neon-cyan);
+        border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    }
+    
+    .step-number {
+        display: inline-block;
+        width: 24px;
+        height: 24px;
+        line-height: 24px;
+        text-align: center;
+        background: var(--gradient-cyber);
+        color: white;
+        font-family: 'Orbitron', sans-serif;
+        font-size: 0.75rem;
+        font-weight: 700;
+        border-radius: 50%;
+        margin-right: 0.5rem;
+    }
+    
+    .step-text {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+    
+    .step-active {
+        background: rgba(0, 255, 136, 0.08);
+        border-left-color: var(--neon-green);
+    }
+    
+    .step-active .step-number {
+        background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+    }
+    
+    /* Elegant thin divider */
+    .thin-divider {
+        height: 1px;
+        background: linear-gradient(90deg, transparent 0%, rgba(0, 212, 255, 0.3) 50%, transparent 100%);
+        margin: 1rem 0;
     }
     
     .sidebar-section {
@@ -446,6 +542,11 @@ st.markdown("""
         letter-spacing: 0.05em;
     }
     
+    /* ===== SPINNER STYLING ===== */
+    .stSpinner > div {
+        border-color: var(--neon-cyan) !important;
+    }
+    
     /* ===== SLIDERS & SELECT BOXES ===== */
     .stSlider > div > div > div > div {
         background: var(--gradient-cyber) !important;
@@ -476,6 +577,13 @@ st.markdown("""
         height: 1px;
         background: linear-gradient(90deg, transparent 0%, var(--glass-border) 50%, transparent 100%);
         margin: 2rem 0;
+    }
+    
+    /* ===== TOAST NOTIFICATION STYLING ===== */
+    [data-testid="stToast"] {
+        background: var(--bg-card) !important;
+        border: 1px solid var(--neon-green) !important;
+        border-radius: var(--radius-md) !important;
     }
     
     /* ===== SCROLLBAR ===== */
@@ -675,12 +783,49 @@ def apply_morphological(image, operation, kernel_size):
         raise RuntimeError(f"Morphological operation failed: {e}")
 
 
+def process_image_with_filter(image, selected_filter, filter_params):
+    """Process image with selected filter. Returns processed image."""
+    if selected_filter == "Grayscale":
+        return convert_to_grayscale(image)
+    elif selected_filter == "Gaussian Blur":
+        return apply_gaussian_blur(image, filter_params['kernel_size'], filter_params['sigma'])
+    elif selected_filter == "Box Blur":
+        return apply_box_blur(image, filter_params['kernel_size'])
+    elif selected_filter == "Median Filter":
+        return apply_median_filter(image, filter_params['kernel_size'])
+    elif selected_filter == "Brightness & Contrast":
+        return adjust_brightness_contrast(image, filter_params['brightness'], filter_params['contrast'])
+    elif selected_filter == "Invert Colors":
+        return apply_inversion(image)
+    elif selected_filter == "Canny Edge":
+        return apply_canny_edge(image, filter_params['low'], filter_params['high'])
+    elif selected_filter == "Sobel Edge":
+        return apply_sobel_edge(image, filter_params['ksize'])
+    elif selected_filter == "Laplacian Edge":
+        return apply_laplacian(image)
+    elif selected_filter == "Sharpening":
+        return apply_sharpening(image, filter_params['strength'])
+    elif selected_filter == "Global Threshold":
+        return apply_threshold(image, filter_params['threshold'])
+    elif selected_filter == "Adaptive Threshold":
+        return apply_adaptive_threshold(image, filter_params['block'], filter_params['c'])
+    elif selected_filter == "Histogram Equalization":
+        return apply_histogram_equalization(image)
+    elif selected_filter == "Morphological Ops":
+        return apply_morphological(image, filter_params['op'], filter_params['ksize'])
+    return image
+
+
 # =============================================================================
 # MAIN APPLICATION
 # =============================================================================
 
 def main():
     """Main application entry point."""
+    
+    # Initialize session state for processing status
+    if 'processed' not in st.session_state:
+        st.session_state.processed = False
     
     # =========================================================================
     # GLOWING NEON HEADER
@@ -694,7 +839,7 @@ def main():
     """, unsafe_allow_html=True)
 
     # =========================================================================
-    # MODULAR SIDEBAR
+    # MODULAR SIDEBAR WITH STEP GUIDE
     # =========================================================================
     with st.sidebar:
         # Sidebar Brand
@@ -706,9 +851,15 @@ def main():
         """, unsafe_allow_html=True)
         
         # =====================================================================
-        # FILE UPLOAD SECTION
+        # STEP 1: UPLOAD IMAGE
         # =====================================================================
-        st.markdown('<div class="sidebar-section">📸 Upload Image</div>', unsafe_allow_html=True)
+        st.markdown("""
+        <div class="step-guide">
+            <span class="step-number">1</span>
+            <span class="step-text">Upload Your Image</span>
+        </div>
+        """, unsafe_allow_html=True)
+        
         uploaded_file = st.file_uploader(
             "Choose an image",
             type=['jpg', 'png', 'jpeg'],
@@ -723,16 +874,24 @@ def main():
         elif uploaded_file:
             st.success(f"✅ {uploaded_file.name}")
         
-        st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
+        st.markdown('<div class="thin-divider"></div>', unsafe_allow_html=True)
         
         # =====================================================================
-        # FILTER CATEGORIES WITH EMOJIS
+        # STEP 2: CHOOSE FILTER CATEGORY
         # =====================================================================
-        st.markdown('<div class="sidebar-section">✨ Filter Category</div>', unsafe_allow_html=True)
+        step2_class = "step-guide step-active" if uploaded_file else "step-guide"
+        st.markdown(f"""
+        <div class="{step2_class}">
+            <span class="step-number">2</span>
+            <span class="step-text">Choose Filter Category</span>
+        </div>
+        """, unsafe_allow_html=True)
+        
         filter_category = st.selectbox(
             "Category",
             ["🚫 None", "✨ Basic", "🔍 Edge Detection", "⚡ Advanced"],
-            label_visibility="collapsed"
+            label_visibility="collapsed",
+            disabled=not uploaded_file
         )
         
         selected_filter = "None"
@@ -742,6 +901,7 @@ def main():
         # BASIC FILTERS
         # -----------------------------------------------------------------
         if filter_category == "✨ Basic":
+            st.markdown('<div class="thin-divider"></div>', unsafe_allow_html=True)
             st.markdown('<div class="sidebar-section">🎚️ Basic Filters</div>', unsafe_allow_html=True)
             selected_filter = st.selectbox(
                 "Filter",
@@ -764,6 +924,7 @@ def main():
         # EDGE DETECTION FILTERS
         # -----------------------------------------------------------------
         elif filter_category == "🔍 Edge Detection":
+            st.markdown('<div class="thin-divider"></div>', unsafe_allow_html=True)
             st.markdown('<div class="sidebar-section">🔬 Edge Filters</div>', unsafe_allow_html=True)
             selected_filter = st.selectbox(
                 "Filter",
@@ -780,6 +941,7 @@ def main():
         # ADVANCED FILTERS
         # -----------------------------------------------------------------
         elif filter_category == "⚡ Advanced":
+            st.markdown('<div class="thin-divider"></div>', unsafe_allow_html=True)
             st.markdown('<div class="sidebar-section">🔧 Advanced Filters</div>', unsafe_allow_html=True)
             selected_filter = st.selectbox(
                 "Filter",
@@ -799,13 +961,26 @@ def main():
                                                     ["Erosion", "Dilation", "Opening", "Closing"])
                 filter_params['ksize'] = st.slider("Kernel Size", 3, 21, 5, step=2)
         
-        st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
+        st.markdown('<div class="thin-divider"></div>', unsafe_allow_html=True)
+        
+        # =====================================================================
+        # STEP 3: DOWNLOAD (shown as inactive hint)
+        # =====================================================================
+        st.markdown("""
+        <div class="step-guide">
+            <span class="step-number">3</span>
+            <span class="step-text">Download Result</span>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown('<div class="thin-divider"></div>', unsafe_allow_html=True)
         
         # =====================================================================
         # RESET BUTTON (RED HOVER EFFECT)
         # =====================================================================
         st.markdown('<div class="reset-btn">', unsafe_allow_html=True)
         if st.button("🔄 Reset Application", use_container_width=True):
+            st.session_state.processed = False
             st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
 
@@ -834,7 +1009,7 @@ def main():
         """, unsafe_allow_html=True)
     else:
         # =====================================================================
-        # IMAGE PROCESSING WITH ROBUST ERROR HANDLING
+        # IMAGE PROCESSING WITH SPINNER & TOAST NOTIFICATIONS
         # =====================================================================
         try:
             # Read and decode image
@@ -845,75 +1020,26 @@ def main():
                 st.error("❌ Could not read the image. Please try a different file.")
             else:
                 processed_image = original_image.copy()
+                filter_applied = False
                 
-                # Apply selected filter
+                # Apply selected filter with spinner
                 if filter_category != "🚫 None" and selected_filter != "None":
-                    try:
-                        if selected_filter == "Grayscale":
-                            processed_image = convert_to_grayscale(processed_image)
-                        elif selected_filter == "Gaussian Blur":
-                            processed_image = apply_gaussian_blur(
+                    with st.spinner("✨ Applying DIP Magic..."):
+                        try:
+                            processed_image = process_image_with_filter(
                                 processed_image, 
-                                filter_params['kernel_size'], 
-                                filter_params['sigma']
+                                selected_filter, 
+                                filter_params
                             )
-                        elif selected_filter == "Box Blur":
-                            processed_image = apply_box_blur(
-                                processed_image, 
-                                filter_params['kernel_size']
-                            )
-                        elif selected_filter == "Median Filter":
-                            processed_image = apply_median_filter(
-                                processed_image, 
-                                filter_params['kernel_size']
-                            )
-                        elif selected_filter == "Brightness & Contrast":
-                            processed_image = adjust_brightness_contrast(
-                                processed_image, 
-                                filter_params['brightness'], 
-                                filter_params['contrast']
-                            )
-                        elif selected_filter == "Invert Colors":
-                            processed_image = apply_inversion(processed_image)
-                        elif selected_filter == "Canny Edge":
-                            processed_image = apply_canny_edge(
-                                processed_image, 
-                                filter_params['low'], 
-                                filter_params['high']
-                            )
-                        elif selected_filter == "Sobel Edge":
-                            processed_image = apply_sobel_edge(
-                                processed_image, 
-                                filter_params['ksize']
-                            )
-                        elif selected_filter == "Laplacian Edge":
-                            processed_image = apply_laplacian(processed_image)
-                        elif selected_filter == "Sharpening":
-                            processed_image = apply_sharpening(
-                                processed_image, 
-                                filter_params['strength']
-                            )
-                        elif selected_filter == "Global Threshold":
-                            processed_image = apply_threshold(
-                                processed_image, 
-                                filter_params['threshold']
-                            )
-                        elif selected_filter == "Adaptive Threshold":
-                            processed_image = apply_adaptive_threshold(
-                                processed_image, 
-                                filter_params['block'], 
-                                filter_params['c']
-                            )
-                        elif selected_filter == "Histogram Equalization":
-                            processed_image = apply_histogram_equalization(processed_image)
-                        elif selected_filter == "Morphological Ops":
-                            processed_image = apply_morphological(
-                                processed_image, 
-                                filter_params['op'], 
-                                filter_params['ksize']
-                            )
-                    except RuntimeError as e:
-                        st.error(f"❌ Filter error: {str(e)}")
+                            filter_applied = True
+                            # Small delay for visual feedback
+                            time.sleep(0.3)
+                        except RuntimeError as e:
+                            st.error(f"❌ Filter error: {str(e)}")
+                    
+                    # Show toast notification on success
+                    if filter_applied:
+                        st.toast("Image Processed Successfully! 🎉", icon="✅")
                 
                 # Convert for display (BGR to RGB)
                 original_rgb = cv2.cvtColor(original_image, cv2.COLOR_BGR2RGB)
@@ -923,7 +1049,7 @@ def main():
                     display_processed = cv2.cvtColor(processed_image, cv2.COLOR_BGR2RGB)
                 
                 # =============================================================
-                # IMAGE WORKSPACE - Side by Side Cards
+                # IMAGE WORKSPACE - Side by Side Cards with Gradient Borders
                 # =============================================================
                 col1, col2 = st.columns([1, 1])
                 
@@ -936,24 +1062,27 @@ def main():
                     st.image(original_rgb, use_container_width=True)
                     st.markdown('</div>', unsafe_allow_html=True)
                 
-                # Processed Image Card with Fade-in Animation
+                # Processed Image Card with Fade-in Animation & Pink Gradient
                 with col2:
                     filter_label = f"🎨 Processed • {selected_filter}" if selected_filter != "None" else "🎨 Processed Image"
                     st.markdown(f'''
-                    <div class="image-card processed-container">
+                    <div class="image-card image-card-processed processed-container">
                         <div class="image-badge badge-processed">{filter_label}</div>
                     ''', unsafe_allow_html=True)
                     st.image(display_processed, use_container_width=True)
                     st.markdown('</div>', unsafe_allow_html=True)
                 
                 # =============================================================
-                # DOWNLOAD SECTION
+                # HIGH-RESOLUTION DOWNLOAD SECTION
                 # =============================================================
                 if filter_category != "🚫 None" and selected_filter != "None":
                     st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
-                    st.markdown("### 💾 Download Processed Image")
+                    st.markdown("### 💾 Download High-Resolution Result")
                     
-                    # Convert to PIL for saving
+                    # Create sanitized filter name for filename
+                    filter_name_clean = selected_filter.lower().replace(' ', '_').replace('&', 'and')
+                    
+                    # Convert to PIL for high-quality saving
                     if len(processed_image.shape) == 2:
                         pil_image = Image.fromarray(processed_image)
                     else:
@@ -963,11 +1092,12 @@ def main():
                     
                     with col_d1:
                         buf = io.BytesIO()
-                        pil_image.save(buf, format='PNG')
+                        # PNG is lossless - highest quality
+                        pil_image.save(buf, format='PNG', optimize=False)
                         st.download_button(
-                            "⬇️ PNG",
+                            "⬇️ PNG (Lossless)",
                             buf.getvalue(),
-                            f"processed_{selected_filter.replace(' ', '_').lower()}.png",
+                            f"processed_{filter_name_clean}.png",
                             "image/png",
                             use_container_width=True
                         )
@@ -975,22 +1105,24 @@ def main():
                     with col_d2:
                         buf = io.BytesIO()
                         img_rgb = pil_image.convert('RGB') if pil_image.mode != 'RGB' else pil_image
-                        img_rgb.save(buf, format='JPEG', quality=95)
+                        # JPEG at maximum quality (100)
+                        img_rgb.save(buf, format='JPEG', quality=100, subsampling=0)
                         st.download_button(
-                            "⬇️ JPEG",
+                            "⬇️ JPEG (Max Quality)",
                             buf.getvalue(),
-                            f"processed_{selected_filter.replace(' ', '_').lower()}.jpg",
+                            f"processed_{filter_name_clean}.jpg",
                             "image/jpeg",
                             use_container_width=True
                         )
                     
                     with col_d3:
                         buf = io.BytesIO()
-                        pil_image.save(buf, format='WebP', quality=95)
+                        # WebP at maximum quality
+                        pil_image.save(buf, format='WebP', quality=100, method=6)
                         st.download_button(
-                            "⬇️ WebP",
+                            "⬇️ WebP (Best Compression)",
                             buf.getvalue(),
-                            f"processed_{selected_filter.replace(' ', '_').lower()}.webp",
+                            f"processed_{filter_name_clean}.webp",
                             "image/webp",
                             use_container_width=True
                         )
