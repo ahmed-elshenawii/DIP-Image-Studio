@@ -201,57 +201,79 @@ st.markdown("""
         border-radius: 10px !important;
     }
     
-    /* Footer */
-    .pro-footer {
+    /* Sticky Footer */
+    .sticky-footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 999;
         text-align: center;
-        padding: 2.5rem 1rem;
-        margin-top: 3rem;
-        border-top: 1px solid rgba(0, 212, 255, 0.2);
-        background: linear-gradient(180deg, transparent 0%, rgba(0, 212, 255, 0.03) 100%);
+        padding: 1rem 1rem;
+        background: linear-gradient(180deg, rgba(14, 17, 23, 0.95) 0%, rgba(14, 17, 23, 0.98) 100%);
+        backdrop-filter: blur(15px);
+        border-top: 1px solid rgba(0, 212, 255, 0.3);
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
     }
     
     .footer-title {
         font-family: 'Orbitron', sans-serif;
-        font-size: 1rem;
+        font-size: 0.75rem;
         font-weight: 600;
         color: #00d4ff;
         letter-spacing: 0.1em;
         text-transform: uppercase;
-        margin-bottom: 1.25rem;
+        margin-bottom: 0.6rem;
     }
     
     .contributors-list {
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
-        gap: 0.75rem;
-        max-width: 800px;
+        gap: 0.5rem;
+        max-width: 900px;
         margin: 0 auto;
     }
     
-    .contributor-name {
-        font-size: 0.95rem;
+    .contributor-link {
+        font-size: 0.8rem;
         color: var(--text-secondary);
-        padding: 0.4rem 1rem;
-        background: rgba(0, 212, 255, 0.08);
-        border: 1px solid rgba(0, 212, 255, 0.2);
+        padding: 0.3rem 0.8rem;
+        background: rgba(0, 212, 255, 0.06);
+        border: 1px solid rgba(0, 212, 255, 0.15);
         border-radius: 20px;
+        text-decoration: none;
         transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
     }
     
-    .contributor-name:hover {
+    .contributor-link:hover {
         background: rgba(0, 212, 255, 0.15);
-        color: var(--text-primary);
+        color: #00d4ff;
+        text-decoration: underline;
         transform: translateY(-2px);
+        border-color: rgba(0, 212, 255, 0.4);
+        box-shadow: 0 4px 15px rgba(0, 212, 255, 0.2);
+    }
+    
+    .contributor-link i {
+        font-size: 0.85rem;
     }
     
     .footer-brand {
         font-family: 'Orbitron', sans-serif;
-        font-size: 0.8rem;
+        font-size: 0.65rem;
         background: linear-gradient(135deg, #00d4ff 0%, #ff007f 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        margin-top: 1.5rem;
+        margin-top: 0.6rem;
+    }
+    
+    /* Add padding to prevent content from being hidden behind the footer */
+    .stApp > div:first-child {
+        padding-bottom: 120px;
     }
     
     /* Welcome Card */
@@ -650,16 +672,29 @@ def main():
         except Exception as e:
             st.error(f"❌ Error processing image: {str(e)}")
     
-    # Footer with contributors
+    # Sticky Footer with interactive social links
     st.markdown("""
-    <div class="pro-footer">
-        <div class="footer-title">✨ Contributors</div>
+    <!-- FontAwesome for GitHub icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <div class="sticky-footer">
+        <div class="footer-title">✨ Team Contributors</div>
         <div class="contributors-list">
-            <span class="contributor-name">Ahmed Elshenawy</span>
-            <span class="contributor-name">Ahmed Osama</span>
-            <span class="contributor-name">Ahmed Seliem</span>
-            <span class="contributor-name">Abdullrahman Elshhawy</span>
-            <span class="contributor-name">Abdullrahman Shaheen</span>
+            <a href="https://github.com/ahmed-elshenawii" target="_blank" class="contributor-link">
+                <i class="fab fa-github"></i> Ahmed Elshenawy
+            </a>
+            <a href="#" target="_blank" class="contributor-link">
+                <i class="fab fa-github"></i> Ahmed Osama
+            </a>
+            <a href="#" target="_blank" class="contributor-link">
+                <i class="fab fa-github"></i> Ahmed Seliem
+            </a>
+            <a href="#" target="_blank" class="contributor-link">
+                <i class="fab fa-github"></i> Abdullrahman Elshhawy
+            </a>
+            <a href="#" target="_blank" class="contributor-link">
+                <i class="fab fa-github"></i> Abdullrahman Shaheen
+            </a>
         </div>
         <div class="footer-brand">DIP-IMAGE-STUDIO © 2024</div>
     </div>
